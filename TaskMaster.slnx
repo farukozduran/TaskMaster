@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TaskMaster.API/TaskMaster.API.csproj" />
+  <Project Path="TaskMaster.MVC/TaskMaster.MVC.csproj" />
+</Solution>
