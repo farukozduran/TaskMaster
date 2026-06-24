@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Developer Workload Report";
+}
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center mb-3">
+        <h2 class="mb-0">Developer Workload Report</h2>
+    </div>
+    <hr />
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label for="developerSelect" class="form-label fw-bold text-secondary">Select Developer</label>
+            <select id="developerSelect" class="form-select border-primary shadow-sm" asp-items="ViewBag.Developers">
+                <option value="">-- Choose a developer to see their tasks --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card shadow-sm d-none" id="reportCard">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0" id="reportTitle">Assigned Tasks</h5>
+            <span class="badge bg-light text-dark" id="taskCountBadge">0 Tasks</span>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Task Title</th>
+                        <th>Project Name</th>
+                        <th class="text-end pe-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tasksTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Dropdown'da seçim değiştiği anda bu fonksiyon çalışır
+            $('#developerSelect').change(function () {
+                var devId = $(this).val();
+                var devName = $("#developerSelect option:selected").text();
+                var tbody = $('#tasksTableBody');
+                var card = $('#reportCard');
+                var countBadge = $('#taskCountBadge');
+
+                // Eğer "Choose a developer" (boş) seçildiyse tabloyu geri gizle
+                if (!devId) {
+                    card.addClass('d-none');
+                    return;
+                }
+
+                // Yükleniyor durumunu göster
+                tbody.html('<tr><td colspan="3" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><span class="ms-2">Loading tasks...</span></td></tr>');
+                card.removeClass('d-none');
+                $('#reportTitle').text(devName + ' - Task List');
+
+                // Controller'daki metoda AJAX GET isteği fırlat
+                $.ajax({
+                    url: '/Reports/GetTasksByDeveloper',
+                    type: 'GET',
+                    data: { developerId: devId },
+                    success: function (data) {
+                        tbody.empty(); // Tabloyu temizle
+                        countBadge.text(data.length + " Tasks");
+
+                        if (data && data.length > 0) {
+                            // Gelen JSON dizisindeki her bir görev için döngüye gir ve tabloya satır (tr) ekle
+                            $.each(data, function (index, task) {
+
+                                // Gelen verideki statüye göre Bootstrap Badge rengi belirle
+                                var statusBadge = '';
+                                if(task.status === "Done") statusBadge = '<span class="badge bg-success">Done</span>';
+                                else if (task.status === "In Progress") statusBadge = '<span class="badge bg-warning text-dark">In Progress</span>';
+                                else statusBadge = '<span class="badge bg-light text-dark border">' + task.status + '</span>';
+
+                                var row = '<tr>' +
+                                    '<td class="align-middle fw-bold">' + task.title + '</td>' +
+                                    '<td class="align-middle"><span class="text-secondary">' + task.projectName + '</span></td>' +
+                                    '<td class="align-middle text-end pe-4">' + statusBadge + '</td>' +
+                                    '</tr>';
+
+                                tbody.append(row); // Satırı tabloya göm
+                            });
+                        } else {
+                            tbody.html('<tr><td colspan="3" class="text-center py-4 text-muted fst-italic">No active tasks found for this developer.</td></tr>');
+                        }
+                    },
+                    error: function () {
+                        tbody.html('<tr><td colspan="3" class="text-center py-4 text-danger fw-bold">An error occurred while fetching data!</td></tr>');
+                    }
+                });
+            });
+        });
+    </script>
+}

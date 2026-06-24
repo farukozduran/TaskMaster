@@ -20,7 +20,7 @@ namespace TaskMaster.MVC.Controllers
         public async Task<IActionResult> Index()
         {
             var tasks = await _apiService.GetAsync<List<ProjectTaskDto>>("api/ProjectTasks");
-            return View(tasks ?? new List<ProjectTaskDto>);
+            return View(tasks ?? new List<ProjectTaskDto>());
         }
 
         [Authorize(Roles = "Admin")]
