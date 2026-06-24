@@ -26,6 +26,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Projects" asp-action="Index">Projects</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="ProjectTasks" asp-action="Index">Tasks</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="nav-link text-success fw-bold" asp-area="" asp-controller="Reports" asp-action="Index">
+                                <i class="bi bi-bar-chart-fill"></i> Reports
+                            </a>
+                        </li>
     
                         @if (User.IsInRole("Admin"))
                         {
