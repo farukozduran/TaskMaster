@@ -83,5 +83,42 @@ namespace TaskMaster.MVC.Controllers
             await HttpContext.SignOutAsync("TaskMasterCookie");
             return RedirectToAction("Login", "Auth");
         }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var client = _httpClientFactory.CreateClient("ApiClient");
+
+            // API'nin beklediği RegisterDto yapısına uygun anonim nesne oluşturuyoruz
+            var jsonContent = JsonSerializer.Serialize(new
+            {
+                Username = model.Username,
+                Email = model.Email,
+                Password = model.Password,
+                FullName = model.FullName
+            });
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync("api/Auth/Register", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Başarılı olursa Login ekranına yönlendirip mesaj verelim
+                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
+                return RedirectToAction("Login");
+            }
+
+            ModelState.AddModelError(string.Empty, "Registration failed. Username or Email might already be taken.");
+            return View(model);
+        }
     }
 }

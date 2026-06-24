@@ -9,6 +9,13 @@
             <div class="card-body p-4">
                 <h3 class="card-title text-center mb-4">TaskMaster Login</h3>
 
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success text-center">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
                 @if (!ViewData.ModelState.IsValid)
                 {
                     <div class="alert alert-danger">
@@ -18,22 +25,33 @@
 
                 <form asp-action="Login" method="post">
                     <div class="mb-3">
-                        <label asp-for="Username" class="form-label">Username</label>
+                        <label asp-for="Username" class="form-label fw-bold">Username</label>
                         <input asp-for="Username" class="form-control" placeholder="Enter your username" />
                         <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
 
                     <div class="mb-4">
-                        <label asp-for="Password" class="form-label">Password</label>
+                        <label asp-for="Password" class="form-label fw-bold">Password</label>
                         <input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" />
                         <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
-                    <div class="d-grid gap-2">
+                    <div class="d-grid gap-2 mb-3">
                         <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <span class="text-muted">Don't have an account?</span>
+                        <a asp-action="Register" class="text-decoration-none fw-bold">Register here</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

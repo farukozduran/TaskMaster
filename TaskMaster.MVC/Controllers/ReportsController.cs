@@ -26,12 +26,12 @@ namespace TaskMaster.MVC.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetTasksByDeveloper(int devId)
+        public async Task<IActionResult> GetTasksByDeveloper(int developerId)
         {
             var allTasks = await _apiService.GetAsync<List<ProjectTaskDto>>("api/ProjectTasks") ?? new List<ProjectTaskDto>();
 
             var filteredTasks = allTasks
-                .Where(t => t.DeveloperId == devId)
+                .Where(t => t.DeveloperId == developerId)
                 .Select(t => new
                 {
                     Title = t.Title,
