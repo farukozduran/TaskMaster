@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TaskMaster.MVC.DTOs;
 using TaskMaster.MVC.Services;
 
@@ -24,8 +25,12 @@ namespace TaskMaster.MVC.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var departments = await _apiService.GetAsync<List<DepartmentDto>>("api/Departments");
+
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "Name");
+
             return View();
         }
 
@@ -38,6 +43,9 @@ namespace TaskMaster.MVC.Controllers
                 await _apiService.PostAsync<DeveloperDto, DeveloperDto>("api/Developers", dev);
                 return RedirectToAction(nameof(Index));
             }
+
+            var departments = await _apiService.GetAsync<List<DepartmentDto>>("api/Departments");
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "Name", dev.DepartmentId);
 
             return View(dev);
         }
@@ -52,6 +60,10 @@ namespace TaskMaster.MVC.Controllers
             {
                 return NotFound();
             }
+
+            var departments = await _apiService.GetAsync<List<DepartmentDto>>("api/Departments");
+
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "Name");
 
             return View(dev);
         }
@@ -70,6 +82,9 @@ namespace TaskMaster.MVC.Controllers
                 await _apiService.PutAsync<DeveloperDto>($"api/Developers/{id}", dev);
                 return RedirectToAction(nameof(Index));
             }
+
+            var departments = await _apiService.GetAsync<List<DepartmentDto>>("api/Departments");
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "Name", dev.DepartmentId);
 
             return View(dev);
         }
