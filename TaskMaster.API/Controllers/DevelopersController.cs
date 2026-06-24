@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TaskMaster.API.DTOs;
 using TaskMaster.API.Models;
 
 namespace TaskMaster.API.Controllers
@@ -19,73 +20,102 @@ namespace TaskMaster.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Developer>>> GetDevelopers()
+        public async Task<ActionResult<IEnumerable<DeveloperDto>>> GetDevelopers()
         {
             return await _context.Developers
                 .Include(d => d.Department)
-                .Include(d => d.Tasks)
+                .Select(d => new DeveloperDto
+                {
+                    DeveloperId = d.DeveloperId,
+                    FirstName = d.FirstName,
+                    LastName = d.LastName,
+                    Title = d.Title,
+                    DepartmentId = d.DepartmentId,
+                    DepartmentName = d.Department.Name
+                })
                 .ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Developer>> GetDeveloperById(int id)
+        public async Task<ActionResult<DeveloperDto>> GetDeveloperById(int id)
         {
-            var developer = await _context.Developers
+            var developerDto = await _context.Developers
                 .Include(d => d.Department)
-                .Include(d => d.Tasks)
-                .FirstOrDefaultAsync(d => d.DepartmentId == id);
+                .Where(d => d.DeveloperId == id)
+                .Select(d => new DeveloperDto
+                {
+                    DeveloperId = d.DeveloperId,
+                    FirstName = d.FirstName,
+                    LastName = d.LastName,
+                    Title = d.Title,
+                    DepartmentId = d.DepartmentId,
+                    DepartmentName = d.Department.Name
+                })
+                .FirstOrDefaultAsync();
 
-            if (developer is null)
+            if (developerDto is null)
             {
                 return NotFound(new { Message = "Gelistirici bulunamadi." });
             }
 
-            return developer;
+            return developerDto;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Developer>> AddDeveloper(Developer developer)
+        public async Task<ActionResult<DeveloperDto>> AddDeveloper(DeveloperDto dto)
         {
-            var departmentExists = await _context.Departments.AnyAsync(d => d.DepartmentId == developer.DepartmentId);
+            var department = await _context.Departments.FindAsync(dto.DepartmentId);
 
-            if (!departmentExists)
+            if (department is null)
             {
                 return BadRequest(new { Message = "Gecersiz Departman ID." });
             }
 
+            var developer = new Developer
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Title = dto.Title,
+                DepartmentId = dto.DepartmentId,
+            };
+
             _context.Developers.Add(developer);
             await _context.SaveChangesAsync();
+
+            dto.DeveloperId = developer.DeveloperId;
+            dto.DepartmentName = department.Name;
 
             return CreatedAtAction(nameof(GetDeveloperById), new { id = developer.DeveloperId }, developer);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDeveloper(int id, Developer developer)
+        public async Task<IActionResult> UpdateDeveloper(int id, DeveloperDto dto)
         {
-            if (id != developer.DeveloperId)
+            if (id != dto.DeveloperId)
             {
                 return BadRequest(new { Message = "ID eslesmiyor." });
             }
 
-            var departmentExists = await _context.Departments.AnyAsync(d => d.DepartmentId == developer.DepartmentId);
-            if (!departmentExists)
+            var developer = await _context.Developers.FindAsync(id);
+            if (developer is null)
+            {
+                return NotFound(new { Message = "Gelistirici bulunamadi." });
+            }
+
+            var department = await _context.Departments.FindAsync(dto.DepartmentId);
+            if (department is null)
             {
                 return BadRequest(new { Message = "Gecersiz Departman ID" });
             }
 
-            _context.Entry(developer).State = EntityState.Modified;
+            developer.FirstName = dto.FirstName;
+            developer.LastName = dto.LastName;
+            developer.Title = dto.Title;
+            developer.DepartmentId = dto.DepartmentId;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Developers.Any(e => e.DeveloperId == id))
-                    return NotFound(new { Message = "Gelistirici bulunamadi." });
-                else
-                    throw;
-            }
+            _context.Entry(developer).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            
 
             return NoContent();
         }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.API.Models;
+using TaskMaster.API.DTOs;
 
 namespace TaskMaster.API.Controllers
 {
@@ -18,41 +19,66 @@ namespace TaskMaster.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Department>>> GetDepartments()
+        public async Task<ActionResult<IEnumerable<DepartmentDto>>> GetDepartments()
         {
-            return await _context.Departments.ToListAsync();
+            return await _context.Departments
+                .Select(d => new DepartmentDto
+                {
+                    DepartmentId = d.DepartmentId,
+                    Name = d.Name
+                })
+                .ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Department>> GetDepartment(int id)
+        public async Task<ActionResult<DepartmentDto>> GetDepartmentById(int id)
         {
-            var department = await _context.Departments.FindAsync(id);
+            var departmentDto = await _context.Departments
+                .Where(d => d.DepartmentId == id)
+                .Select(d => new DepartmentDto
+                {
+                    DepartmentId = d.DepartmentId,
+                    Name = d.Name
+                })
+                .FirstOrDefaultAsync();
 
-            if (department == null)
+            if (departmentDto is null)
             {
                 return NotFound(new { Message = "Departman bulunamadi." });
             }
 
-            return department;
+            return departmentDto;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Department>> AddDepartment(Department department)
+        public async Task<ActionResult<DepartmentDto>> AddDepartment(DepartmentDto dto)
         {
+            var department = new Department
+            {
+                Name = dto.Name
+            };
+
             _context.Departments.Add(department);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetDepartment), new { id = department.DepartmentId }, department);
+            return CreatedAtAction(nameof(GetDepartmentById), new { id = department.DepartmentId }, dto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDepartment(int id, Department department)
+        public async Task<IActionResult> UpdateDepartment(int id, DepartmentDto dto)
         {
-            if (id != department.DepartmentId)
+            if (id != dto.DepartmentId)
             {
                 return BadRequest(new { Message = "ID eslesmiyor." });
             }
 
+            var department = await _context.Departments.FindAsync(id);
+            if (department is null)
+            {
+                return NotFound(new { Message = "Departman bulunamadi." });
+            }
+
+            department.Name = dto.Name;
             _context.Entry(department).State = EntityState.Modified;
 
             try

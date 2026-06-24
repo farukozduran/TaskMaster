@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TaskMaster.API.DTOs;
 using TaskMaster.API.Models;
 
 namespace TaskMaster.API.Controllers
@@ -19,48 +20,108 @@ namespace TaskMaster.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectTask>>> GetTasks()
+        public async Task<ActionResult<IEnumerable<ProjectTaskDto>>> GetTasks()
         {
             return await _context.Tasks
                 .Include(t => t.Project)
                 .Include(t => t.Developer)
+                .Select(t => new ProjectTaskDto
+                {
+                    ProjectTaskId = t.ProjectTaskId,
+                    Title = t.Title,
+                    Description = t.Description,
+                    Status = t.Status,
+                    ProjectId = t.ProjectId,
+                    ProjectName = t.Project.Name,
+                    DeveloperId = t.DeveloperId,
+                    DeveloperFullName = t.Developer != null ? $"{t.Developer.FirstName} {t.Developer.LastName}" : null
+                })
                 .ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProjectTask>> GetTask(int id)
+        public async Task<ActionResult<ProjectTaskDto>> GetTaskById(int id)
         {
-            var projectTask = await _context.Tasks
+            var taskDto = await _context.Tasks
                 .Include(t => t.Project)
                 .Include(t => t.Developer)
-                .FirstOrDefaultAsync(t => t.ProjectTaskId == id);
+                .Where(t => t.ProjectTaskId == id)
+                .Select(t => new ProjectTaskDto
+                {
+                    ProjectTaskId = t.ProjectTaskId,
+                    Title = t.Title,
+                    Description = t.Description,
+                    Status = t.Status,
+                    ProjectId = t.ProjectId,
+                    ProjectName = t.Project.Name,
+                    DeveloperId = t.DeveloperId,
+                    DeveloperFullName = t.Developer != null ? $"{t.Developer.FirstName} {t.Developer.LastName}" : null
+                })
+                .FirstOrDefaultAsync();
 
-            if (projectTask == null)
+            if (taskDto == null)
             {
                 return NotFound();
             }
 
-            return projectTask;
+            return taskDto;
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProjectTask>> AddTask(ProjectTask projectTask)
+        public async Task<ActionResult<ProjectTaskDto>> AddTask(ProjectTaskDto dto)
         {
-            _context.Tasks.Add(projectTask);
+            var projectExists = await _context.Projects.AnyAsync(p => p.ProjectId == dto.ProjectId);
+            if (!projectExists)
+            {
+                return BadRequest(new { Message = "Geçersiz Proje ID." });
+            }
+
+            if (dto.DeveloperId.HasValue)
+            {
+                var developerExists = await _context.Developers.AnyAsync(d => d.DeveloperId == dto.DeveloperId.Value);
+                if (!developerExists)
+                {
+                    return BadRequest(new { Message = "Geçersiz Geliştirici ID." });
+                }
+            }
+
+            var task = new ProjectTask
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                Status = dto.Status,
+                ProjectId = dto.ProjectId,
+                DeveloperId = dto.DeveloperId
+            };
+
+            _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTask), new { id = projectTask.ProjectTaskId }, projectTask);
+            dto.ProjectTaskId = task.ProjectTaskId;
+            return CreatedAtAction(nameof(GetTaskById), new { id = task.ProjectTaskId }, dto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id, ProjectTask projectTask)
+        public async Task<IActionResult> UpdateTask(int id, ProjectTaskDto dto)
         {
-            if (id != projectTask.ProjectTaskId)
+            if (id != dto.ProjectTaskId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(projectTask).State = EntityState.Modified;
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            task.Title = dto.Title;
+            task.Description = dto.Description;
+            task.Status = dto.Status;
+            task.ProjectId = dto.ProjectId;
+            task.DeveloperId = dto.DeveloperId;
+
+            _context.Entry(task).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
             return NoContent();
