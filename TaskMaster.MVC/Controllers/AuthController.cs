@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using TaskMaster.MVC.Models;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace TaskMaster.MVC.Controllers
 {
@@ -45,10 +46,16 @@ namespace TaskMaster.MVC.Controllers
 
                 if(tokenResponse != null && !string.IsNullOrEmpty(tokenResponse.Token))
                 {
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwtToken = handler.ReadJwtToken(tokenResponse.Token);
+
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, model.Username)
                     };
+
+                    var roleClaims = jwtToken.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role");
+                    claims.AddRange(roleClaims);
 
                     var claimsIdentity = new ClaimsIdentity(claims, "TaskMasterCookie");
 

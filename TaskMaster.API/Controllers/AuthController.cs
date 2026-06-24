@@ -17,11 +17,13 @@ namespace TaskMaster.API.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AuthController(UserManager<AppUser> userManager, IConfiguration configuration)
+        public AuthController(UserManager<AppUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _roleManager = roleManager;
         }
 
         [HttpPost]
@@ -51,7 +53,48 @@ namespace TaskMaster.API.Controllers
                     new { Status = "Hata", Message = $"Kullanici olusturulamadi: {errors}" });
             }
 
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await _roleManager.RoleExistsAsync("User"))
+                await _roleManager.CreateAsync(new IdentityRole("User"));
+
+            await _userManager.AddToRoleAsync(user, "User");
+
             return Ok(new { Status = "Basarili", Message = "Kullanici basariyla olusturuldu." });
+        }
+
+        [HttpPost]
+        [Route("RegisterAdmin")]
+        public async Task<IActionResult> RegisterAdmin([FromBody] RegisterDto dto)
+        {
+            var userExists = await _userManager.FindByNameAsync(dto.Username);
+            if (userExists != null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { Status = "Hata", Message = "Kullanici zaten mevcut" });
+            }
+
+            AppUser user = new AppUser()
+            {
+                Email = dto.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                UserName = dto.Username,
+                FullName = dto.FullName
+            };
+
+            var result = await _userManager.CreateAsync(user, dto.Password);
+            if (!result.Succeeded)
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { Status = "Hata", Message = "Kullanici olusturulamadi." });
+
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await _roleManager.RoleExistsAsync("User"))
+                await _roleManager.CreateAsync(new IdentityRole("User"));
+
+            await _userManager.AddToRoleAsync(user, "Admin");
+
+            return Ok(new { Status = "Basarili", Message = "Admin yetkili kullanici basariyla olusturuldu." });
         }
 
         [HttpPost]
@@ -62,11 +105,18 @@ namespace TaskMaster.API.Controllers
 
             if (user != null && await _userManager.CheckPasswordAsync(user, dto.Password))
             {
+                var userRoles = await _userManager.GetRolesAsync(user);
+
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
+
+                foreach (var userRole in userRoles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                }
 
                 var token = GetToken(authClaims);
 
