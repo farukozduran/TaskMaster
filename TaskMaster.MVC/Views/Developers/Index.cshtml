@@ -4,70 +4,55 @@
 }
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Developers Management</h2>
-
         @if (User.IsInRole("Admin"))
         {
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Add New Developer
-            </a>
+            <a asp-action="Create" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add New Developer</a>
         }
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-striped table-hover mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Full Name</th>
-                        <th>Title</th>
-                        <th>Department</th>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <th class="text-end pe-4">Actions</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
+    <div class="glass-table-container theme-developers">
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Title</th>
+                    <th>Department</th>
+                    @if (User.IsInRole("Admin"))
                     {
-                        foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="align-middle">@item.DeveloperId</td>
-                                <td class="align-middle fw-bold">@item.FirstName @item.LastName</td>
-                                <td class="align-middle">@item.Title</td>
-                                <td class="align-middle">
-                                    <span class="badge bg-info text-dark">@item.DepartmentName</span>
-                                </td>
-
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <td class="text-end pe-3">
-                                        <a asp-action="Edit" asp-route-id="@item.DeveloperId" class="btn btn-sm btn-outline-primary me-2">
-                                            Edit
-                                        </a>
-
-                                        <form asp-action="Delete" asp-route-id="@item.DeveloperId" method="post" class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this developer?');">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </td>
-                                }
-                            </tr>
-                        }
+                        <th class="text-end">Actions</th>
                     }
-                    else
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No developers found in the system.</td>
+                            <td>@item.DeveloperId</td>
+                            <td class="fw-bold">@item.FirstName @item.LastName</td>
+                            <td>@item.Title</td>
+                            <td><span class="badge bg-light text-dark opacity-75">@item.DepartmentName</span></td>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@item.DeveloperId" class="btn btn-sm btn-glass me-2">Edit</a>
+                                    <form asp-action="Delete" asp-route-id="@item.DeveloperId" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                                    </form>
+                                </td>
+                            }
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center py-4">No developers found.</td></tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

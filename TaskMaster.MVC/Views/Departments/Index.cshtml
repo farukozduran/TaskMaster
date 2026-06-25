@@ -1,0 +1,54 @@
+﻿@model IEnumerable<TaskMaster.MVC.DTOs.DepartmentDto>
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Departments Management</h2>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add New Department</a>
+        }
+    </div>
+
+    <div class="glass-table-container theme-departments">
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Department Name</th>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <th class="text-end">Actions</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.DepartmentId</td>
+                            <td class="fw-bold">@item.Name</td>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-glass me-2">Edit</a>
+                                    <form asp-action="Delete" asp-route-id="@item.DepartmentId" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this department?');">Delete</button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="3" class="text-center py-4">No departments found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

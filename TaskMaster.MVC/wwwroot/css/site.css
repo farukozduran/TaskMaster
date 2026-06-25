@@ -29,3 +29,189 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* MODERN SAYDAM TABLO TASARIMLARI (GLASSMORPHISM) */
+.glass-table-container {
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    margin-bottom: 30px;
+}
+
+.glass-table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+    .glass-table th,
+    .glass-table td {
+        padding: 15px;
+        background-color: rgba(255, 255, 255, 0.15); /* Saydam hücreler */
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-table th {
+        text-align: left;
+        background-color: rgba(0, 0, 0, 0.25); /* Başlıkları vurgulamak için biraz koyulaştırdık */
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .glass-table tbody tr:hover td {
+        background-color: rgba(255, 255, 255, 0.25); /* Satır üzerine gelince parlama */
+        transition: background-color 0.3s ease;
+    }
+
+/* 1. Projeler İçin Renk (Senin gönderdiğin orijinal Mor/Yeşil) */
+.theme-projects {
+    background: linear-gradient(45deg, #49a09d, #5f2c82);
+}
+
+/* 2. Geliştiriciler İçin Renk (Canlı Kırmızı/Pembe) */
+.theme-developers {
+    background: linear-gradient(45deg, #FF416C, #FF4B2B);
+}
+
+/* 3. Görevler İçin Renk (Turkuaz/Mavi) */
+.theme-tasks {
+    background: linear-gradient(45deg, #11998e, #0575E6);
+}
+
+/* Bu koyu arka planlarda butonların güzel görünmesi için şeffaf buton stili */
+.btn-glass {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+    .btn-glass:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+        color: #fff;
+    }
+
+/* 4. Departmanlar İçin Renk (Turuncu/Sarı Gün Batımı) */
+.theme-departments {
+    background: linear-gradient(45deg, #F2994A, #F2C94C);
+}
+
+/* --- GLASSMORPHISM FORM TASARIMLARI --- */
+.glass-form-container {
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    color: #fff; /* Yazıları beyaz yapar */
+}
+
+/* Yarı saydam metin kutuları ve açılır listeler */
+.glass-input {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #fff !important;
+    color-scheme: dark; /* Tarih seçici ve saat ikonlarını beyaz/koyu temaya uydurur */
+}
+
+    .glass-input:focus {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        box-shadow: 0 0 10px rgba(255,255,255,0.2) !important;
+    }
+
+    .glass-input::placeholder {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* Select kutusu tıklandığında açılan seçeneklerin arka planını ayarlar */
+    .glass-input option {
+        background-color: #2c3e50;
+        color: #fff;
+    }
+
+/* --- GOOGLE FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* --- MODERN GLOBAL ARKA PLAN & YAPI --- */
+body.modern-body {
+    background-color: #0f172a; /* Derin Gece Mavisi */
+    background-image: radial-gradient(circle at 10% 20%, rgba(95, 44, 130, 0.15) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(73, 160, 157, 0.15) 0%, transparent 40%);
+    background-attachment: fixed;
+    font-family: 'Poppins', sans-serif;
+    color: #f8fafc;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+/* --- YÜZEN CAM MENÜ (GLASS NAVBAR) --- */
+.glass-navbar {
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    padding: 15px 0;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+    .glass-navbar .navbar-brand {
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: #fff !important;
+        font-size: 1.4rem;
+    }
+
+    .glass-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.65) !important;
+        font-weight: 500;
+        padding: 8px 16px !important;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        margin: 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .glass-navbar .nav-link:hover,
+        .glass-navbar .nav-link.active {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+/* Sayfa İçeriğini Ortada Tutmak İçin */
+.main-content-wrapper {
+    flex: 1; /* Footer'ı her zaman en alta iter */
+    padding-bottom: 40px;
+}
+
+/* --- CAM FOOTER --- */
+.glass-footer {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.5);
+    padding: 20px 0;
+    font-size: 0.9rem;
+}
+
+/* 5. Raporlar İçin Renk (Mor/Eflatun Geçişi) */
+.theme-reports {
+    background: linear-gradient(45deg, #8E2DE2, #4A00E0);
+}
+
+/* 6. Dashboard İçin Renk (Koyu Gece Mavisi/Mor Geçişi) */
+.theme-dashboard {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
